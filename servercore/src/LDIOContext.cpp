@@ -28,16 +28,6 @@ namespace net_core
 		io_context_.restart();
 	}
 
-	boost::asio::io_context& CIOContext::get_io_context()
-	{
-		return io_context_;
-	}
-
-	CIOContext& CIOContext::instance()
-	{
-		return singleton_;
-	}
-
 	template<typename THandler>
 	auto CIOContext::bind_executor(THandler&& pHandler)
 	{

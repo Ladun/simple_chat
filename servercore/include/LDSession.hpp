@@ -19,7 +19,7 @@ namespace net_core
         virtual ~CSession();
 
         void start();
-        void send();
+        void send(char* buffer, int size);
 
     private:
         ErrCode disconnect();    

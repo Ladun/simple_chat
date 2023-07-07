@@ -5,6 +5,7 @@
 namespace net_core
 {
 
+    #pragma pack(push, 1)
     class CBufferHeader
     {
     public:
@@ -13,6 +14,7 @@ namespace net_core
     public:
         Size data_size = 0;
     };
+    #pragma pack(pop)
 
     class CBuffer
     {

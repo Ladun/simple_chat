@@ -1,19 +1,20 @@
 
 #include "pch.hpp"
 #include "LDSession.hpp"
+#include "LDHandler.hpp"
 #include "LDIOContext.hpp"
 
 namespace net_core
 {
 
     CSession::CSession(SocketType socket) 
-        : socket_(std::move(socket))
+        : socket_(std::move(socket)), buffer_(eSzPacketMax)
     {
     }
 
     CSession::~CSession()
     {
-
+        
     }
 
     void CSession::start()
@@ -30,10 +31,15 @@ namespace net_core
         return aError.value();
     }
 
-    void CSession::send()
+    void CSession::send(char* buffer, int size)
     {
-        // boost::asio::async_write(socket_,
-        //                          )
+        socket_.async_write_some(boost::asio::mutable_buffer(buffer, size), CIOContext::instance().bind_executor(
+			[this](const boost::system::error_code& pError, std::size_t pSendSize)
+            {
+                if(pError.value() != 0 || pSendSize == 0)
+                    disconnect();
+            }
+        ));
     }
 
     ErrCode CSession::register_recv()
@@ -50,7 +56,7 @@ namespace net_core
         socket_.async_read_some(boost::asio::mutable_buffer(write_ptr, size), CIOContext::instance().bind_executor(
             [this](const boost::system::error_code& pError, std::size_t pRecvSize)
             {
-                if(pError.value() != 0 || pRecvSize == 0)
+                if(pError.value() != 0)
                 {
                     disconnect();
                     return;
@@ -64,13 +70,41 @@ namespace net_core
                 }
 
                 register_recv();
-        ));
-        
+            }));
+
     }
 
     ErrCode CSession::on_recv(Size size)
     {
-        
+        if(size == 0)
+            return eErrCodeInvalidSize;
+
+        if(!buffer_.on_push(size))
+            return eErrCodeSessionBufferFull;
+
+        Size    aSize = 0;
+        ErrCode aResult = 0;
+        char*   aData = buffer_.front(aSize, aResult);
+        if(aResult != 0)
+            return aResult;
+
+        while(aData != nullptr && aResult == 0)
+        {
+            if(aSize < sizeof(CPacketHeader))
+                return eErrCodeInvalidSize;
+
+            CPacketHeader* aHeader = reinterpret_cast<CPacketHeader*>(aData);
+            aResult = CMessageHandler::instance().process(aHeader->message_, aHeader, aSize);
+            if(aResult != 0)
+                break;
+            
+            aData = buffer_.front(aSize, aResult);
+        }
+        if(aResult != 0)
+            return aResult;
+
+        buffer_.pop();
+        return 0;
     }
 
     

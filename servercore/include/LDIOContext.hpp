@@ -23,8 +23,8 @@ namespace net_core
 		template<typename THandler>
 		void post(THandler&& pHandler);
 
-		boost::asio::io_context&	get_io_context();
-		static CIOContext&	instance();
+		boost::asio::io_context& get_io_context() { return io_context_; }
+		static CIOContext&	instance() { return singleton_; }
 
 	private:
 		static CIOContext			        singleton_;

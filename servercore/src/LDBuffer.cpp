@@ -46,13 +46,16 @@ namespace net_core
         // 크다면 Error
         if(size > MAX_SIZE - sizeof(CBufferHeader))
         {
-            pErr = 1;
+            pErr = eErrCodeSessionBufferFull;
             return nullptr;
         }
 
         // 읽을 데이터의 크기가 실제 데이터 크기와 다르다면
         if(size > use_size_ - static_cast<Size>(read_index_) - sizeof(CBufferHeader))
+        {
+            pErr = eErrCodeInvalidSize;
             return nullptr;
+        }
         
         read_index_ += (static_cast<int>(size) + static_cast<int>(sizeof(CBufferHeader)));
         return data;
@@ -81,8 +84,8 @@ namespace net_core
         if(write_index_ + size > MAX_SIZE)
             return false;
 
-        write_index_ = static_cast<int>(size);
-        use_size_    = size;
+        write_index_ += static_cast<int>(size);
+        use_size_    += size;
 
         return true;
     }

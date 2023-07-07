@@ -3,13 +3,16 @@
 #include <vector>
 
 namespace net_core
-{
+{   
+
+    #pragma pack(push, 1)
     template <typename T>
     struct MessageHeader
     {
         T id{};
         uint32_t size = 0;
     };
+    #pragma pack(pop)
 
     template <typename T>
     struct Message
