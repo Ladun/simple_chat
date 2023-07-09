@@ -3,8 +3,6 @@
 namespace net_core
 {
 
-	CIOContext CIOContext::singleton_;
-
 	CIOContext::CIOContext() : io_context_(), strand_(io_context_), work_(io_context_)
 	{
 	}

@@ -33,13 +33,13 @@ namespace net_core
 
     void CSession::send(char* buffer, int size)
     {
-        socket_.async_write_some(boost::asio::mutable_buffer(buffer, size), CIOContext::instance().bind_executor(
+        socket_.async_write_some(boost::asio::mutable_buffer(buffer, size), boost::asio::bind_executor(CIOContext::instance().get_strand(),
 			[this](const boost::system::error_code& pError, std::size_t pSendSize)
             {
                 if(pError.value() != 0 || pSendSize == 0)
                     disconnect();
-            }
-        ));
+            })
+        );
     }
 
     ErrCode CSession::register_recv()
@@ -53,7 +53,7 @@ namespace net_core
             return eErrCodeSesBufferFull;
         }
 
-        socket_.async_read_some(boost::asio::mutable_buffer(write_ptr, size), CIOContext::instance().bind_executor(
+        socket_.async_read_some(boost::asio::mutable_buffer(write_ptr, size), boost::asio::bind_executor(CIOContext::instance().get_strand(),
             [this](const boost::system::error_code& pError, std::size_t pRecvSize)
             {
                 if(pError.value() != 0)
@@ -89,7 +89,7 @@ namespace net_core
             return aResult;
 
         while(aData != nullptr && aResult == 0)
-        {
+        {   
             if(aSize < sizeof(CPacketHeader))
                 return eErrCodeInvalidSize;
 

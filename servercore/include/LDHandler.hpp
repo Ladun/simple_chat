@@ -9,7 +9,7 @@
 
 namespace net_core
 {
-    class CMessageHandler
+    class CMessageHandler : public Singleton<CMessageHandler>
     {
     public:
         using HandlerType = std::function<ErrCode(CPacketHeader*, Size)>;
@@ -17,14 +17,27 @@ namespace net_core
     public:
         CMessageHandler() = default;
         ~CMessageHandler() = default;
-        ErrCode register_handler(MessageNo pNumber, HandlerType&& pHandler);
-        template<typename... TArgs>
-        ErrCode process(MessageNo pNumber, TArgs... pArgs);
+        ErrCode register_handler(MessageNo pNumber, HandlerType&& pHandler)
+        {
+            auto aResult = handler_list_.emplace(pNumber, pHandler);
+            if (aResult.second == false)
+                return eErrCodeAlreadyRegistered;
 
-		static CMessageHandler&	instance() { return singleton_; }
+            return 0;
+        }
+	
+        template<typename... TArgs>
+        ErrCode process(MessageNo pNumber, TArgs... pArgs)
+        {
+            auto aIter = handler_list_.find(pNumber);
+            if (aIter == handler_list_.end())
+                return eErrCodeInvalidMessage;
+
+            auto aResult = aIter->second(pArgs...);
+            return aResult;
+        }
         
     private:
-        static CMessageHandler singleton_;
 
         std::map<MessageNo, HandlerType> handler_list_;
     };

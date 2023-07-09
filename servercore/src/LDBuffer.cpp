@@ -1,8 +1,6 @@
+
 #include "pch.hpp"
 #include "LDBuffer.hpp"
-
-#define __STDC_WANT_LIB_EXT1__ 1
-#include <string.h>
 
 namespace net_core
 {
@@ -26,9 +24,11 @@ namespace net_core
             return false;
 
         reinterpret_cast<CBufferHeader*>(buffer_ + write_index_)->data_size = size;
-        ::memcpy_s(buffer_ + write_index_ + sizeof(CBufferHeader), get_usable_size() - sizeof(CBufferHeader), data, size);
+        //::memcpy_s(buffer_ + write_index_ + sizeof(CBufferHeader), get_usable_size() - sizeof(CBufferHeader), data, size);
+        ::memcpy(buffer_ + write_index_ + sizeof(CBufferHeader), data, size);
         use_size_ += size + sizeof(CBufferHeader);
         write_index_ += static_cast<int>(size) + sizeof(CBufferHeader);
+        
         return true;
     }
 
@@ -64,7 +64,8 @@ namespace net_core
     void CBuffer::pop()
     {
         // memmove_s(void *dest, rsize_t destsz, const void *src, rsize_t count);
-        ::memmove_s(buffer_, MAX_SIZE, buffer_ + read_index_, MAX_SIZE - read_index_);
+        // ::memmove_s(buffer_, MAX_SIZE, buffer_ + read_index_, MAX_SIZE - read_index_);
+        ::memmove(buffer_, buffer_ + read_index_, MAX_SIZE - read_index_);
 
         write_index_    -= read_index_;
         use_size_       -= static_cast<int>(read_index_);

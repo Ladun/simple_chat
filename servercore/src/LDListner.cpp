@@ -8,11 +8,16 @@
 namespace net_core
 {
 
-    CListner::CListner(std::function<__SessionPtr(SocketType)> session_factory,
+    CListner::CListner(std::function<SessionPtr(SocketType)> session_factory,
                        const EndpointType& endpoint) :
         session_factory_(session_factory_), acceptor_(CIOContext::instance().get_io_context(), endpoint)
     {
         start_accept();
+    }
+
+    CListner::~CListner()
+    {
+        
     }
 
 
@@ -25,8 +30,9 @@ namespace net_core
             {
                 if (!ec)
                 {
-                    __SessionPtr new_session = session_factory_(std::move(socket));
+                    SessionPtr new_session = session_factory_(std::move(socket));
                     new_session->start();
+                    new_session->on_connected();
                 }
 
                 // 다음 클라이언트의 연결을 기다립니다.

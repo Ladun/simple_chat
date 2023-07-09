@@ -1,17 +1,16 @@
 #pragma once
 
+#include <boost/asio.hpp>
+
 #include "LDCore.hpp"
 
-#include <boost/asio.hpp>
 
 namespace net_core
 {
-    class CIOContext
+    class CIOContext : public Singleton<CIOContext>
     {
-	private:
-		CIOContext();
-
 	public:
+		CIOContext();
 		~CIOContext();
 
 		ErrCode run();
@@ -24,11 +23,9 @@ namespace net_core
 		void post(THandler&& pHandler);
 
 		boost::asio::io_context& get_io_context() { return io_context_; }
-		static CIOContext&	instance() { return singleton_; }
+		boost::asio::io_context::strand& get_strand() { return strand_; }
 
 	private:
-		static CIOContext			        singleton_;
-
 		boost::asio::io_context			    io_context_;
 		boost::asio::io_context::strand	    strand_;
 		boost::asio::io_context::work	    work_;

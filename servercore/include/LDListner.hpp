@@ -9,13 +9,7 @@ namespace net_core
     class CListner
     {
     public:
-        using __SessionPtr = std::shared_ptr<CSession>;
-        using AcceptorType = boost::asio::ip::tcp::acceptor;
-        using EndpointType = boost::asio::ip::tcp::endpoint;
-        using SocketType = boost::asio::ip::tcp::socket;
-
-    public:
-        CListner(std::function<__SessionPtr(SocketType)> session_factory,
+        CListner(std::function<SessionPtr(SocketType)> session_factory,
                  const EndpointType& endpoint);
         ~CListner();
         
@@ -23,7 +17,7 @@ namespace net_core
 
 
     private:
-        std::function<__SessionPtr(SocketType)> session_factory_;
+        std::function<SessionPtr(SocketType)> session_factory_;
         AcceptorType acceptor_;
 
     };
