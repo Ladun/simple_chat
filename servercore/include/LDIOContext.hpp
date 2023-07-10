@@ -18,12 +18,17 @@ namespace net_core
 		void	restart();
 
 		template<typename THandler>
-		auto bind_executor(THandler&& pHandler);
+		auto bind_executor(THandler&& pHandler)
+		{
+			return boost::asio::bind_executor(strand_, pHandler);
+		}
 		template<typename THandler>
-		void post(THandler&& pHandler);
+		void post(THandler&& pHandler)
+		{
+			return io_context_.post(strand_, pHandler);
+		}
 
 		boost::asio::io_context& get_io_context() { return io_context_; }
-		boost::asio::io_context::strand& get_strand() { return strand_; }
 
 	private:
 		boost::asio::io_context			    io_context_;

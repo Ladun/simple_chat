@@ -19,9 +19,9 @@ namespace net_core
 
     void CSession::start()
     {
-
         register_recv();
     }
+    
     ErrCode CSession::disconnect()
     {
         boost::system::error_code aError;
@@ -33,7 +33,7 @@ namespace net_core
 
     void CSession::send(char* buffer, int size)
     {
-        socket_.async_write_some(boost::asio::mutable_buffer(buffer, size), boost::asio::bind_executor(CIOContext::instance().get_strand(),
+        socket_.async_write_some(boost::asio::mutable_buffer(buffer, size), CIOContext::instance().bind_executor(
 			[this](const boost::system::error_code& pError, std::size_t pSendSize)
             {
                 if(pError.value() != 0 || pSendSize == 0)
@@ -53,7 +53,7 @@ namespace net_core
             return eErrCodeSesBufferFull;
         }
 
-        socket_.async_read_some(boost::asio::mutable_buffer(write_ptr, size), boost::asio::bind_executor(CIOContext::instance().get_strand(),
+        socket_.async_read_some(boost::asio::mutable_buffer(write_ptr, size), CIOContext::instance().bind_executor(
             [this](const boost::system::error_code& pError, std::size_t pRecvSize)
             {
                 if(pError.value() != 0)

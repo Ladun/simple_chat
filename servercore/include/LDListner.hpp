@@ -14,6 +14,7 @@ namespace net_core
         ~CListner();
         
         void start_accept();
+        ErrCode close();
 
 
     private:

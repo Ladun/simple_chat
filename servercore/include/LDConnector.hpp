@@ -1,25 +1,26 @@
 #pragma once
 
-#include <functional>
-#include "LDSession.hpp"
-
 namespace net_core
 {
     class CConnector
     {
 
     public:
-        CConnector(std::function<SessionPtr(SocketType)> session_factory,
-                  const std::string& host, 
-                  const std::string& port);
+        CConnector(const std::string& host, 
+                   const std::string& port);
         ~CConnector();
 
-        void start_connect();
+        ErrCode connect();
+
+        SessionPtr get_session() const{
+            return session_;
+        }
     
     private:
-        std::function<SessionPtr(SocketType)> session_factory_;
+        SessionPtr session_;
 
+        std::string& host_;
+        std::string& port_;
         ResolverType resolver_;
-        ResolverType::iterator endpoint_iterator_;
     };
 }

@@ -39,4 +39,11 @@ namespace net_core
                 start_accept();
             });
     }
+
+    void CListner::close()
+    {
+		boost::system::error_code aError;
+		acceptor_.close(aError);
+		return aError.value();
+    }
 }

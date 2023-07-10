@@ -5,11 +5,10 @@
 
 namespace net_core
 {
-    CConnector::CConnector(std::function<SessionPtr(SocketType)> session_factory,
-                           const std::string& host, 
+    CConnector::CConnector(const std::string& host, 
                            const std::string& port):
-        session_factory_(session_factory_), 
-        resolver_(CIOContext::instance().get_io_context()), endpoint_iterator_(resolver_.resolve(host, port))
+        resolver_(CIOContext::instance().get_io_context()), 
+        host_(host), port_(port), session_(nullptr);
     {
 
     }
@@ -18,24 +17,26 @@ namespace net_core
     {
     }
 
-    void CConnector::start_connect()
-    {
+    ErrCode CConnector::connect()
+    {        
         SocketType socket(CIOContext::instance().get_io_context());
 
-        socket.async_connect(*endpoint_iterator_,
-            [this, &socket](boost::system::error_code ec)
-            {
-                if (!ec)
-                {
-                    SessionPtr new_session = session_factory_(std::move(socket));
-                    new_session->start();
-                    new_session->on_connected();
-                }
-                else
-                {
-                    // 예외처리
-                }
-            }
-        );
+        ResolverType::iterator endpoint_iterator = resolver_.resolve(host_, port_);
+        ResolverType::iterator end;
+        boost::system::error_code error = boost::asio::error::host_not_found;
+        
+        while(error && endpoint_iterator != end)
+        {
+            socket->close();
+            socket->connect(*endpoint_iterator++, error);
+        }
+        if(error)
+            return eErrCodeHostNotFound;
+
+        session_ = std::make_shared<CSession>(std::move(socket));
+        session_->start();
+        session_->on_connected();
+        
+        return 0;
     }
 }

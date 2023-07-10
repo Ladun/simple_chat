@@ -25,17 +25,4 @@ namespace net_core
 	{
 		io_context_.restart();
 	}
-
-	template<typename THandler>
-	auto CIOContext::bind_executor(THandler&& pHandler)
-	{
-		return boost::asio::bind_executor(strand_, pHandler);
-	}
-
-	template<typename THandler>
-	void CIOContext::post(THandler&& pHandler)
-	{
-		return io_context_.post(strand_, pHandler);
-	}
-
 }
