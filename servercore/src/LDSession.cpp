@@ -7,42 +7,50 @@
 namespace net_core
 {
 
-    CSession::CSession(SocketType socket) 
-        : socket_(std::move(socket)), buffer_(eSzPacketMax)
+    Session::Session(SocketType&& socket) 
+        : socket_(std::move(socket)), buffer_(eSzPacketMax), send_buffer_(eSzPacketMax)
     {
     }
 
-    CSession::~CSession()
+    Session::~Session()
     {
         
     }
 
-    void CSession::start()
+    void Session::start()
     {
         register_recv();
     }
     
-    ErrCode CSession::disconnect()
+    ErrCode Session::disconnect()
     {
         boost::system::error_code aError;
+
+        on_disconnected();
+
         if(socket_.is_open())
             socket_.close(aError);
 
         return aError.value();
     }
 
-    void CSession::send(char* buffer, int size)
+    void Session::send(char* buffer, int size)
     {
-        socket_.async_write_some(boost::asio::mutable_buffer(buffer, size), CIOContext::instance().bind_executor(
-			[this](const boost::system::error_code& pError, std::size_t pSendSize)
+        socket_.async_write_some(boost::asio::mutable_buffer(buffer, size), IOContext::instance().bind_executor(
+			[this](const boost::system::error_code& ec, std::size_t send_size)
             {
-                if(pError.value() != 0 || pSendSize == 0)
+                if(ec.value() != 0 || send_size == 0)
+                {
+                    std::cout << "Fail to send, error: "<< ec.message() <<"\n";
                     disconnect();
+                }
+
+                on_send(send_size);
             })
         );
     }
 
-    ErrCode CSession::register_recv()
+    ErrCode Session::register_recv()
     {
         Size size       = buffer_.get_usable_size();
         char* write_ptr = buffer_.get_write_ptr();
@@ -53,34 +61,43 @@ namespace net_core
             return eErrCodeSesBufferFull;
         }
 
-        socket_.async_read_some(boost::asio::mutable_buffer(write_ptr, size), CIOContext::instance().bind_executor(
-            [this](const boost::system::error_code& pError, std::size_t pRecvSize)
+        socket_.async_read_some(boost::asio::mutable_buffer(write_ptr, size), IOContext::instance().bind_executor(
+            [this](const boost::system::error_code& ec, std::size_t recv_size)
             {
-                if(pError.value() != 0)
+                
+                if(ec.value() != 0)
                 {
+                    std::cout << "Fail to recv, error: "<< ec.message() <<"\n";
                     disconnect();
                     return;
                 }
 
-                ErrCode aErr = on_recv(static_cast<Size>(pRecvSize));
+                ErrCode aErr = on_recv(static_cast<Size>(recv_size));
                 if (aErr != 0)
                 {
+                    std::cout << "Fail on_recv, error: "<< aErr <<"\n";
                     disconnect();
                     return;
                 }
 
                 register_recv();
             }));
-
+        
+        return 0;
     }
 
-    ErrCode CSession::on_recv(Size size)
+    ErrCode Session::on_recv(Size size)
     {
         if(size == 0)
+        {
             return eErrCodeInvalidSize;
+        }
 
         if(!buffer_.on_push(size))
+        {
             return eErrCodeSessionBufferFull;
+        }
+
 
         Size    aSize = 0;
         ErrCode aResult = 0;
@@ -90,11 +107,13 @@ namespace net_core
 
         while(aData != nullptr && aResult == 0)
         {   
-            if(aSize < sizeof(CPacketHeader))
+            if(aSize < sizeof(PacketHeader))
+            {
                 return eErrCodeInvalidSize;
+            }
 
-            CPacketHeader* aHeader = reinterpret_cast<CPacketHeader*>(aData);
-            aResult = CMessageHandler::instance().process(aHeader->message_, aHeader, aSize);
+            PacketHeader* aHeader = reinterpret_cast<PacketHeader*>(aData);
+            aResult = MessageHandler::instance().process(aHeader->message_, aHeader, aSize, this);
             if(aResult != 0)
                 break;
             

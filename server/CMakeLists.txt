@@ -13,6 +13,8 @@ include_directories(${Boost_INCLUDE_DIRS})
 # server_core
 find_library(servercore_LIBRARIES NAMES libserver_core.a PATHS ../servercore/build)
 include_directories(../servercore/include)
+# common include
+include_directories(../include)
 
 # find source and header
 file(GLOB_RECURSE HEADERS

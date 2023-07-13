@@ -6,12 +6,12 @@
 
 namespace net_core
 {
-    class CListner
+    class Listner
     {
     public:
-        CListner(std::function<SessionPtr(SocketType)> session_factory,
+        Listner(std::function<SessionPtr(SocketType)> session_factory,
                  const EndpointType& endpoint);
-        ~CListner();
+        ~Listner();
         
         void start_accept();
         ErrCode close();

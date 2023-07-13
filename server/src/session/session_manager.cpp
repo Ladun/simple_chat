@@ -2,14 +2,16 @@
 #include "session_manager.hpp"
 #include "client_session.hpp"
 
+#include <iostream>
+
 namespace server
 {
-    net_core::SessionPtr CSessionManager::generate(net_core::SocketType socket)
+    net_core::SessionPtr SessionManager::generate(net_core::SocketType socket)
     {
         net_core::WriteLock lock(mutex_);
 
         int session_id = ++session_id_;
-        net_core::SessionPtr session = std::make_shared<CClientSession>(std::move(socket));
+        net_core::SessionPtr session = std::make_shared<ClientSession>(std::move(socket));
         session->set_id(session_id);
 
         session_list_.emplace(session_id, session);
@@ -17,7 +19,7 @@ namespace server
         return session;
     }
 
-    net_core::SessionPtr CSessionManager::find(uint32_t id)
+    net_core::SessionPtr SessionManager::find(uint32_t id)
     {
         net_core::ReadLock lock(mutex_);
         auto iter = session_list_.find(id);
@@ -27,7 +29,7 @@ namespace server
         return iter->second;
     }
 
-    void CSessionManager::remove(net_core::SessionPtr session)
+    void SessionManager::remove(net_core::SessionPtr session)
     {
         net_core::WriteLock lock(mutex_);
 

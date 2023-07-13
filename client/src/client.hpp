@@ -7,12 +7,13 @@ namespace client
     class CClient
     {
     public:
-        CClient(const std::string& host,
+        CClient(const std::string& nickname,
+                const std::string& host,
                 const std::string& port);
         ~CClient();
 
+        net_core::ErrCode init();
         net_core::ErrCode connect_and_run();
-        net_core::ErrCode send();
         net_core::ErrCode close();
     
     private:
@@ -21,8 +22,10 @@ namespace client
 
     private:
         bool is_init_;
+
+        std::string nickname_;
         
-        net_core::CConnector connector_;
         std::thread thread_;
+        net_core::Connector connector_;
     };
 }

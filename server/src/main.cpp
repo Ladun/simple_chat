@@ -8,15 +8,17 @@ int main(int argc, char* argv[])
 {
     try
     {
-        if ( argc < 2 )
+        if ( argc != 2 )
         {
-            std::cerr << "Usage: <progam> <port>\n";
+            std::cerr << "Usage: server <port>\n";
             return 1;
         }
 
-        std::shared_ptr<server::CServer> server = std::make_shared<server::CServer>(std::atoi(argv[2]));
+        server::CServer server(std::atoi(argv[1]));
         
-        server->run();
+        server.init();
+        std::cout << "[Start Server]\n";
+        server.run();
 
 
     } catch(std:: exception& e)

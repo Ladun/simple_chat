@@ -3,25 +3,25 @@
 namespace net_core
 {
 
-	CIOContext::CIOContext() : io_context_(), strand_(io_context_), work_(io_context_)
+	IOContext::IOContext() : io_context_(), strand_(io_context_), work_(io_context_)
 	{
 	}
 
-	CIOContext::~CIOContext()
+	IOContext::~IOContext()
 	{
 	}
 
-	ErrCode CIOContext::run()
+	ErrCode IOContext::run()
 	{
 		return io_context_.run();
 	}
 
-	void CIOContext::stop()
+	void IOContext::stop()
 	{
 		io_context_.stop();
 	}
 
-	void CIOContext::restart()
+	void IOContext::restart()
 	{
 		io_context_.restart();
 	}

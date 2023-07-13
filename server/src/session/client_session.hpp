@@ -4,11 +4,11 @@
 
 namespace server
 {
-    class CClientSession: public net_core::CSession
+    class ClientSession: public net_core::Session
     {
     public:
-        CClientSession(net_core::SocketType socket);
-        ~CClientSession();
+        ClientSession(net_core::SocketType socket);
+        ~ClientSession();
 
         void on_connected() override;
         void on_send(std::size_t sendSize) override;

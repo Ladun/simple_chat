@@ -1,14 +1,19 @@
 #pragma once 
 
+#include "LDCore.hpp"
+
 namespace net_core
 {
-    using MessageNo = unsigned long;
+    using MessageNo = unsigned short;
 
     #pragma pack(push, 1)
-    class CPacketHeader
+    class PacketHeader
     {
     public:
         MessageNo message_{};
     };
     #pragma pack(pop)
+
+    // Packet header size
+    constexpr Size ePacketHeaderSize = sizeof(PacketHeader);
 }

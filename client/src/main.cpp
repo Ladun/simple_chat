@@ -1,7 +1,6 @@
 #include <iostream>
 #include <boost/asio.hpp>
 
-#include <protocol.hpp>
 #include "client.hpp"
 
 
@@ -15,20 +14,16 @@ int main(int argc, char* argv[])
             std::cerr << "Usage: client <nickname> <host> <port>\n";
             return 1;
         }
+        
+        client::CClient client(argv[1], argv[2], argv[3]);
 
-        boost:asio:io_context io_context;
+        client.init();
 
-        Client client(io_context, argv[1], argv[2], argv[3]);
-
-        std::array<char, MAP_IP_PACK_SIZE> msg;
-        while(true)
+        std::cout << "[Start Client]\n";
+        net_core::ErrCode err = client.connect_and_run();
+        if(err)
         {
-            memset(msg.data(), '\0', msg.size());
-            if(!std::cin.getline(msg.data(), MAX_IP_PACK_SIZE - PADDING - MAX_NICKNAME))
-            {
-                std::cin.clear();
-            }
-            // Send Data           
+            std::cout << err;
         }
 
     }

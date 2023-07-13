@@ -2,21 +2,40 @@
 
 #include "LDCore.hpp"
 #include "LDBuffer.hpp"
+#include "LDPacketHeader.hpp"
 
 #include <boost/asio.hpp>
+
 
 namespace net_core
 {
     // 세션 클래스 정의
-    constexpr Size eSzPacketMin = sizeof(CBufferHeader);
+    constexpr Size eSzPacketMin = sizeof(BufferHeader);
     
-    class CSession : public std::enable_shared_from_this<CSession>
+    class Session : public std::enable_shared_from_this<Session>
     {
     public:
-        CSession(SocketType socket);
-        virtual ~CSession();
+        Session(SocketType&& socket);
+        virtual ~Session();
 
         void start();
+        template<typename PacketType>
+        ErrCode send(PacketHeader& packet)
+        {
+            // Temp code.
+            // Add to buffer_
+            send_buffer_.clear();
+            send_buffer_.push(reinterpret_cast<char*>(&packet), sizeof(PacketType));
+
+            // Size    size = 0;
+            // ErrCode result = 0;
+            // char*   data = send_buffer_.front(size, result);
+            // if(result)
+            //     return result;
+
+            send(send_buffer_.get_buffer(), send_buffer_.get_using_size());
+            return 0;
+        }
         void send(char* buffer, int size);
 
     private:
@@ -40,8 +59,9 @@ namespace net_core
     protected:
         uint32_t id_{};
         SocketType socket_;
-        CBuffer buffer_;
+        Buffer buffer_;
+        Buffer send_buffer_;
         
     };
-    using SessionPtr = std::shared_ptr<CSession>;
+    using SessionPtr = std::shared_ptr<Session>;
 }

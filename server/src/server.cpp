@@ -1,14 +1,19 @@
+
+
 #include "server.hpp"
+#include "handler.hpp"
 #include "session/session_manager.hpp"
+
+#include "custom_packet.hpp"
 
 namespace server
 {
     CServer::CServer(int port)
         : listner_(
-            [](net_core::SocketType) -> net_core::SessionPtr
+            [](net_core::SocketType socket) -> net_core::SessionPtr
             {
-                return CSessionManager::instance().generate(std::move(socket));
-            }, net_core::EndpointType(tcp::v4(), port)),
+                return SessionManager::instance().generate(std::move(socket));
+            }, net_core::EndpointType(boost::asio::ip::tcp::v4(), port)),
           thread_cnt_(0), is_init_(false)
     {
         thread_cnt_ = std::thread::hardware_concurrency() * 2;
@@ -23,6 +28,10 @@ namespace server
     {
 
         // add handler;
+        
+        net_core::MessageHandler::instance().register_handler(
+            static_cast<net_core::MessageNo>(net_packet::PacketCode::CHAT),
+            &ChatPacketHandler);
 
         is_init_ = true;
         return 0;
@@ -54,7 +63,7 @@ namespace server
     {
         listner_.close();
 
-        net_core::CIOContext::instance().stop();
+        net_core::IOContext::instance().stop();
         return 0;
     }
 
@@ -62,7 +71,7 @@ namespace server
     {
         try
         {
-            net_core::CIOContext::instance().run();
+            net_core::IOContext::instance().run();
         } catch(std::exception& exception)
         {
             // TODO: log error;

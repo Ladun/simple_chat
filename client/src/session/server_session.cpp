@@ -1,30 +1,33 @@
 
+#include <iostream>
+
 #include "server_session.hpp"
 
 namespace client
 {
-    CServerSession::CServerSession(net_core::SocketType socket)
-        : CSession(std::move(socket))
+    ServerSession::ServerSession(net_core::SocketType socket)
+        : Session(std::move(socket)), sendbuffer_(net_core::eSzPacketMax)
     {
 
     }
 
-    CServerSession::~CServerSession()
+    ServerSession::~ServerSession()
     {
 
     }
 
-
-    void CServerSession::on_connected()
+    void ServerSession::on_connected()
     {
+        std::cout << "Connect to " << socket_.remote_endpoint().address().to_string() << " \n";
 
     }
-    void CServerSession::on_send(std::size_t sendSize)
+    void ServerSession::on_send(std::size_t sendSize)
     {
-
+        std::cout << "Send size: " << sendSize << '\n';
     }
-    void CServerSession::on_disconnected() 
+    
+    void ServerSession::on_disconnected() 
     {
-
+        std::cout << "disconnected\n";
     }
 }

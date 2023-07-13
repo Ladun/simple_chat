@@ -7,11 +7,11 @@
 
 namespace net_core
 {
-    class CIOContext : public Singleton<CIOContext>
+    class IOContext : public Singleton<IOContext>
     {
 	public:
-		CIOContext();
-		~CIOContext();
+		IOContext();
+		~IOContext();
 
 		ErrCode run();
 		void	stop();

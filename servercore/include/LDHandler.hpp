@@ -9,14 +9,14 @@
 
 namespace net_core
 {
-    class CMessageHandler : public Singleton<CMessageHandler>
+    class MessageHandler : public Singleton<MessageHandler>
     {
     public:
-        using HandlerType = std::function<ErrCode(CPacketHeader*, Size)>;
+        using HandlerType = std::function<ErrCode(PacketHeader*, Size, Session*)>;
 
     public:
-        CMessageHandler() = default;
-        ~CMessageHandler() = default;
+        MessageHandler() = default;
+        ~MessageHandler() = default;
         ErrCode register_handler(MessageNo pNumber, HandlerType&& pHandler)
         {
             auto aResult = handler_list_.emplace(pNumber, pHandler);

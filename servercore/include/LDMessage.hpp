@@ -93,12 +93,12 @@ namespace net_core
     // on a client the owner would be the server.
 
     // Forward declare the connection
-    class CSession;
+    class Session;
 
     template <typename T>
     struct OwnedMessage
     {
-        std::shared_ptr<CSession> remote = nullptr;
+        std::shared_ptr<Session> remote = nullptr;
         Message<T> msg;
 
         // Again, a friendly string maker

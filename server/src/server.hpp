@@ -22,7 +22,7 @@ namespace server
     private:
         bool is_init_;
 
-        net_core::CListner listner_;
+        net_core::Listner listner_;
 
         unsigned int thread_cnt_;
         std::vector<std::thread> thread_list_;

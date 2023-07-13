@@ -7,11 +7,11 @@
 namespace server
 {   
     // TODO: Change to Thread-safe singleton
-    class CSessionManager : public net_core::Singleton<CSessionManager>
+    class SessionManager : public net_core::Singleton<SessionManager>
     {
     public:
-        CSessionManager() = default;
-        ~CSessionManager() = default;
+        SessionManager() = default;
+        ~SessionManager() = default;
 
         net_core::SessionPtr generate(net_core::SocketType socket);
         net_core::SessionPtr find(uint32_t id);
