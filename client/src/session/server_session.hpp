@@ -1,13 +1,14 @@
 #pragma once
 
 #include <LDServerEngine.hpp>
+#include "../client.hpp"
 
-namespace client
+namespace ld_client
 {
     class ServerSession: public net_core::Session
     {
     public:
-        ServerSession(net_core::SocketType socket);
+        ServerSession(net_core::SocketType socket, Client* client);
         ~ServerSession();
 
         void on_connected() override;
@@ -15,6 +16,6 @@ namespace client
         void on_disconnected() override;
 
     private:
-        net_core::Buffer sendbuffer_;
+        Client* client_;
     };
 }

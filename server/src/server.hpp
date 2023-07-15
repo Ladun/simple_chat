@@ -2,21 +2,24 @@
 
 #include <LDServerEngine.hpp>
 
-namespace server
+#include "session/session_manager.hpp"
+
+namespace ld_server
 {
-    class CServer
+    class Server
     {
     public:
-        CServer(int port);
-        ~CServer();
+        Server(int port);
+        ~Server();
 
         net_core::ErrCode init();
         net_core::ErrCode run();
         net_core::ErrCode close();
 
+        void broadcast(net_core::PacketHeader& packet, net_core::Size size);
     private:
-        void __broadcast(/* data */);
-        void __send(/*session_id, data*/);
+        // template<typename PacketType>
+        // void __send(/*session_id, data*/);
         void __io_context_run();
 
     private:

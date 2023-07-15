@@ -2,15 +2,23 @@
 
 #include <LDServerEngine.hpp>
 
-namespace client
+namespace ld_client
 {
-    class CClient
+    enum class State
+    {
+        NOT_INITIALIZED,
+        INITIALIZED, 
+        RUNNING,
+        CLOSED
+    };
+
+    class Client
     {
     public:
-        CClient(const std::string& nickname,
+        Client(const std::string& nickname,
                 const std::string& host,
                 const std::string& port);
-        ~CClient();
+        ~Client();
 
         net_core::ErrCode init();
         net_core::ErrCode connect_and_run();
@@ -21,7 +29,7 @@ namespace client
         void __io_context_run();
 
     private:
-        bool is_init_;
+        State state_;
 
         std::string nickname_;
         

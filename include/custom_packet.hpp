@@ -16,6 +16,7 @@ namespace net_packet
         ~ChatPacket() = default;
 
     public:
-        int data;
+        std::array<char, 30> nickname;
+        std::array<char, 992> message;
     };
 }

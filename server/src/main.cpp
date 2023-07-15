@@ -14,7 +14,7 @@ int main(int argc, char* argv[])
             return 1;
         }
 
-        server::CServer server(std::atoi(argv[1]));
+        ld_server::Server server(std::atoi(argv[1]));
         
         server.init();
         std::cout << "[Start Server]\n";

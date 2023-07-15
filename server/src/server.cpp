@@ -6,45 +6,46 @@
 
 #include "custom_packet.hpp"
 
-namespace server
+
+namespace ld_server
 {
-    CServer::CServer(int port)
+    Server::Server(int port)
         : listner_(
-            [](net_core::SocketType socket) -> net_core::SessionPtr
+            [this](net_core::SocketType socket) -> net_core::SessionPtr
             {
-                return SessionManager::instance().generate(std::move(socket));
+                return SessionManager::instance().generate(std::move(socket), this);
             }, net_core::EndpointType(boost::asio::ip::tcp::v4(), port)),
           thread_cnt_(0), is_init_(false)
     {
         thread_cnt_ = std::thread::hardware_concurrency() * 2;
     }
 
-    CServer::~CServer()
+    Server::~Server()
     {
         
     }
 
-    net_core::ErrCode CServer::init()
+    net_core::ErrCode Server::init()
     {
 
         // add handler;
         
         net_core::MessageHandler::instance().register_handler(
             static_cast<net_core::MessageNo>(net_packet::PacketCode::CHAT),
-            &ChatPacketHandler);
+            std::bind(&ChatPacketHandler, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, this));
 
         is_init_ = true;
         return 0;
     }
 
-    net_core::ErrCode CServer::run()
+    net_core::ErrCode Server::run()
     {
         if(!is_init_)
             return eErrCodeNoInitialize;
 
         for (unsigned int index = 0; index < thread_cnt_; ++index)
         {
-            thread_list_.emplace_back(std::thread{std::bind(&CServer::__io_context_run, this)});
+            thread_list_.emplace_back(std::thread{std::bind(&Server::__io_context_run, this)});
 
         }
 
@@ -59,7 +60,7 @@ namespace server
         return 0;
     }
 
-    net_core::ErrCode CServer::close()
+    net_core::ErrCode Server::close()
     {
         listner_.close();
 
@@ -67,7 +68,18 @@ namespace server
         return 0;
     }
 
-    void CServer::__io_context_run()
+    void Server::broadcast(net_core::PacketHeader& packet, net_core::Size size)
+    {
+        for(const auto& [id, session] : SessionManager::instance().get_session_list())
+        {
+            if(session->socket().is_open())
+            {
+                session->send(packet, size);
+            }
+        }
+    }
+
+    void Server::__io_context_run()
     {
         try
         {

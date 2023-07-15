@@ -91,6 +91,13 @@ namespace net_core
         return true;
     }
 
+    char* Buffer::get_read_ptr()
+    {
+        if(static_cast<int>(use_size_) - read_index_ < static_cast<int>(sizeof(BufferHeader)))
+            return nullptr;
+        return  buffer_ + read_index_;
+    }
+
     char* Buffer::get_write_ptr()
     {
         return &(buffer_[write_index_]);

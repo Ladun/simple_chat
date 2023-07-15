@@ -1,24 +1,31 @@
 #pragma once
 
-#include <LDServerEngine.hpp>
-#include "session/client_session.hpp"
-#include <custom_packet.hpp>
-
 #include <iostream>
 
-namespace server
+#include <LDServerEngine.hpp>
+#include <custom_packet.hpp>
+
+#include "session/client_session.hpp"
+#include "server.hpp"
+
+
+
+namespace ld_server
 {
 
-    net_core::ErrCode ChatPacketHandler(net_core::PacketHeader* header, net_core::Size size, net_core::Session* session)
-    {
+    net_core::ErrCode ChatPacketHandler(net_core::PacketHeader* header, net_core::Size pSize, net_core::Session* session, Server* server)
+    {   
         auto packet = reinterpret_cast<net_packet::ChatPacket*>(header);
 
-        std::cout << "[Receive] data: " << packet->data<<"\n";
+        // std::cout << "Packet ptr: " << packet << ", ";
+        // std::cout << "Receive size: " << pSize << ", ";
+        // std::cout << "Session ptr: " << session << ", ";
+        // std::cout << "Server ptr: " << server << "\n";
 
-        net_packet::ChatPacket sPacket{};
-        sPacket.data = 2;
-        
-        session->send<net_packet::ChatPacket>(sPacket);  
+        std::cout << "Receive [" << packet->nickname.data() <<"]:";
+        std::cout << packet->message.data() <<"\n"; 
+
+        server->broadcast(*packet, sizeof(*packet));
         return 0;
     }
 }

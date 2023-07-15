@@ -19,23 +19,7 @@ namespace net_core
         virtual ~Session();
 
         void start();
-        template<typename PacketType>
-        ErrCode send(PacketHeader& packet)
-        {
-            // Temp code.
-            // Add to buffer_
-            send_buffer_.clear();
-            send_buffer_.push(reinterpret_cast<char*>(&packet), sizeof(PacketType));
-
-            // Size    size = 0;
-            // ErrCode result = 0;
-            // char*   data = send_buffer_.front(size, result);
-            // if(result)
-            //     return result;
-
-            send(send_buffer_.get_buffer(), send_buffer_.get_using_size());
-            return 0;
-        }
+        ErrCode send(PacketHeader& packet, Size size);
         void send(char* buffer, int size);
 
     private:

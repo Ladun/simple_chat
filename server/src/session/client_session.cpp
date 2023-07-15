@@ -4,10 +4,10 @@
 #include "client_session.hpp"
 
 
-namespace server
+namespace ld_server
 {
-    ClientSession::ClientSession(net_core::SocketType socket)
-        : Session(std::move(socket))
+    ClientSession::ClientSession(net_core::SocketType socket, Server* server)
+        : Session(std::move(socket)), server_(server)
     {
 
     }
@@ -25,12 +25,14 @@ namespace server
 
     void ClientSession::on_send(std::size_t sendSize)
     {
-        std::cout << "Send size: " << sendSize << '\n';
+        // std::cout << "Send size: " << sendSize << '\n';
 
     }
     void ClientSession::on_disconnected() 
     {
         std::cout << "disconnected\n";
+
+        server_->close();
 
     }
 }

@@ -4,14 +4,14 @@
 
 #include <iostream>
 
-namespace server
+namespace ld_server
 {
-    net_core::SessionPtr SessionManager::generate(net_core::SocketType socket)
+    net_core::SessionPtr SessionManager::generate(net_core::SocketType socket, Server* server)
     {
         net_core::WriteLock lock(mutex_);
 
         int session_id = ++session_id_;
-        net_core::SessionPtr session = std::make_shared<ClientSession>(std::move(socket));
+        net_core::SessionPtr session = std::make_shared<ClientSession>(std::move(socket), server);
         session->set_id(session_id);
 
         session_list_.emplace(session_id, session);

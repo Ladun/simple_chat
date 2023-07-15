@@ -7,26 +7,26 @@
 
 #include "custom_packet.hpp"
 
-namespace client
+namespace ld_client
 {
-    CClient::CClient(const std::string& nickname,
+    Client::Client(const std::string& nickname,
                      const std::string& host,
                      const std::string& port)
         :  connector_(
-            [](net_core::SocketType socket) -> net_core::SessionPtr
+            [this](net_core::SocketType socket) -> net_core::SessionPtr
             {
-                return std::make_shared<ServerSession>(std::move(socket));
+                return std::make_shared<ServerSession>(std::move(socket), this);
             },
-            host, port), nickname_(nickname)
+            host, port), nickname_(nickname), state_(State::NOT_INITIALIZED)
     {    
     }
 
-    CClient::~CClient()
+    Client::~Client()
     {
         
     }
 
-    net_core::ErrCode CClient::init()
+    net_core::ErrCode Client::init()
     {
         // add handler;
         
@@ -34,50 +34,57 @@ namespace client
             static_cast<net_core::MessageNo>(net_packet::PacketCode::CHAT),
             &ChatPacketHandler);
 
-        is_init_ = true;
+        state_ = State::INITIALIZED;
         return 0;
     }
 
-    net_core::ErrCode CClient::connect_and_run()
+    net_core::ErrCode Client::connect_and_run()
     {
-        if(!is_init_)
+        if(state_ == State::NOT_INITIALIZED)
             return eErrCodeNoInitialize;
             
         net_core::ErrCode err = connector_.connect();
         if(err)
             return err;
 
+        state_ = State::RUNNING;
         // Run io_context -> run program
-        thread_ = std::thread{std::bind(&CClient::__io_context_run, this)};
+        thread_ = std::thread{std::bind(&Client::__io_context_run, this)};
         
         // Custom update
-        std::array<char, 1024> msg;
+        std::array<char, 992> msg;
+        net_packet::ChatPacket packet{};
+        memcpy(packet.nickname.data(), nickname_.data(), sizeof(nickname_.data()));
         while(true)
         {
             memset(msg.data(), '\0', msg.size());
-            if(!std::cin.getline(msg.data(), 1024 - nickname_.size()))
+            if(!std::cin.getline(msg.data(), 1024 - nickname_.size() - sizeof(net_core::PacketHeader)))
             {
                 std::cin.clear();
             }
 
-            // TODO: Send Data   
-            net_packet::ChatPacket packet{};
-            packet.data = 1;
-            
-            connector_.get_session()->send<net_packet::ChatPacket>(packet);            
-        }
-        
-        thread_.join();
-    }
+            if(state_ != State::RUNNING)
+                break;
 
-    net_core::ErrCode CClient::close()
-    {
-        
-        net_core::IOContext::instance().stop();
+            memcpy(packet.message.data(), msg.data(), msg.size());
+            
+            connector_.get_session()->send(packet, sizeof(packet));            
+        }
+        thread_.join();
+
         return 0;
     }
 
-    void CClient::__io_context_run()
+    net_core::ErrCode Client::close()
+    {
+        
+        net_core::IOContext::instance().stop();
+
+        state_ = State::CLOSED;
+        return 0;
+    }
+
+    void Client::__io_context_run()
     {
         try
         {

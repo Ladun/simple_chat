@@ -10,7 +10,7 @@ namespace net_core
     class PacketHeader
     {
     public:
-        MessageNo message_{};
+        MessageNo message_{};        
     };
     #pragma pack(pop)
 

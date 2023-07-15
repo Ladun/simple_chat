@@ -33,6 +33,7 @@ namespace net_core
         void clear();
         bool on_push(Size size);
         char* get_write_ptr();
+        char* get_read_ptr();
 
         Size get_using_size() const { return use_size_; }
         Size get_usable_size() const { return MAX_SIZE - use_size_; }

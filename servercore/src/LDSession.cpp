@@ -34,6 +34,16 @@ namespace net_core
         return aError.value();
     }
 
+    ErrCode Session::send(PacketHeader& packet, Size size)
+    {
+        // Add to buffer_
+        send_buffer_.clear();
+        send_buffer_.push(reinterpret_cast<char*>(&packet), size);
+
+        send(send_buffer_.get_read_ptr(), send_buffer_.get_using_size());
+        return 0;
+    }
+
     void Session::send(char* buffer, int size)
     {
         socket_.async_write_some(boost::asio::mutable_buffer(buffer, size), IOContext::instance().bind_executor(

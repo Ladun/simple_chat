@@ -15,7 +15,7 @@ int main(int argc, char* argv[])
             return 1;
         }
         
-        client::CClient client(argv[1], argv[2], argv[3]);
+        ld_client::Client client(argv[1], argv[2], argv[3]);
 
         client.init();
 
