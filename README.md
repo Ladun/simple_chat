@@ -32,3 +32,4 @@ sudo ./b2 install
     ```
     ./server <port>
     ```
+![](https://github.com/Ladun/simple_chat/blob/master/example.png)
